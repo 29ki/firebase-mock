@@ -1,6 +1,7 @@
 'use strict';
 
 var Snapshot = require('./snapshot');
+var Timestamp = require('./timestamp');
 var FieldValue = require('./firestore-field-value');
 var _ = require('./lodash');
 
@@ -75,6 +76,24 @@ exports.priorityComparator = function priorityComparator(a, b) {
   return 0;
 };
 
+var serverClock, defaultClock;
+
+serverClock = defaultClock = function () {
+  return new Date().getTime();
+};
+
+exports.getServerTime = function getServerTime() {
+  return serverClock();
+};
+
+exports.setServerClock = function setServerTime(fn) {
+  serverClock = fn;
+};
+
+exports.restoreServerClock = function restoreServerTime() {
+  serverClock = defaultClock;
+};
+
 exports.isServerTimestamp = function isServerTimestamp(data) {
   return _.isObject(data) && data['.sv'] === 'timestamp';
 };
@@ -109,11 +128,9 @@ exports.removeEmptyRtdbProperties = function removeEmptyRtdbProperties(obj) {
 };
 
 exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties(obj) {
-  var t = typeof obj;
-  if (t === 'boolean' || t === 'string' || t === 'number' || t === 'undefined') {
+  if (!_.isPlainObject(obj)) {
     return obj;
   }
-  if (obj instanceof Date) return obj;
 
   var keys = getKeys(obj);
   if (keys.length > 0) {
@@ -123,7 +140,7 @@ exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties
         delete obj[s];
       }
       if (FieldValue.serverTimestamp().isEqual(value)) {
-        obj[s] = new Date();
+        obj[s] = Timestamp.fromMillis(exports.getServerTime());
       }
     }
   }

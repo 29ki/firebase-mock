@@ -111,8 +111,9 @@ MockFirestoreDocument.prototype.create = function (data, callback) {
       var base = self._getData();
       err = err || self._validateDoesNotExist(base);
       if (err === null) {
-        var time = Timestamp.fromDate(new Date());
+        var time = Timestamp.fromMillis(utils.getServerTime());
         var result = new WriteResult(time);
+        data = utils.removeEmptyFirestoreProperties(data);
         self._dataChanged(data);
         resolve(result);
       } else {
@@ -136,6 +137,7 @@ MockFirestoreDocument.prototype.set = function (data, opts, callback) {
   return new Promise(function (resolve, reject) {
     self._defer('set', _.toArray(arguments), function () {
       if (err === null) {
+        data = utils.removeEmptyFirestoreProperties(data);
         self._dataChanged(data);
         resolve();
       } else {
