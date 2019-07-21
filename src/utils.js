@@ -127,14 +127,14 @@ exports.removeEmptyRtdbProperties = function removeEmptyRtdbProperties(obj) {
   }
 };
 
-exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties(obj, serverTime) {
+exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties(obj, serverTime, current) {
   if (!_.isPlainObject(obj)) {
     return obj;
   }
 
   var keys = getKeys(obj);
   if (keys.length > 0) {
-    for (var s in obj) {
+    Object.keys(obj).forEach(function(s) {
       var value = removeEmptyFirestoreProperties(obj[s], serverTime);
       if (FieldValue.delete().isEqual(value)) {
         delete obj[s];
@@ -143,7 +143,20 @@ exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties
       } else if (value instanceof Timestamp) {
         obj[s] = value.toDate();
       }
-    }
+
+      if (value && typeof value === 'object' && 'arg' in value) {
+        var replacement = Array.isArray(value.arg) ? value.arg : [value.arg];
+
+        if (FieldValue.arrayRemove().isEqual(value)) {
+          obj[s] = current[s].filter(function(e) {
+            return replacement.indexOf(e) === -1;
+          });
+        }
+        if (FieldValue.arrayUnion().isEqual(value)) {
+          obj[s] = _.union(current[s], replacement);
+        }
+      }
+    });
   }
   return obj;
 
