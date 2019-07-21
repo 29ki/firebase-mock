@@ -135,7 +135,7 @@ exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties
   var keys = getKeys(obj);
   if (keys.length > 0) {
     Object.keys(obj).forEach(function(s) {
-      var value = removeEmptyFirestoreProperties(obj[s], serverTime);
+      var value = removeEmptyFirestoreProperties(obj[s], serverTime, current);
       if (FieldValue.delete().isEqual(value)) {
         delete obj[s];
       } else if (FieldValue.serverTimestamp().isEqual(value)) {
