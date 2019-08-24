@@ -104,6 +104,14 @@ describe('MockFirebaseSdk', function () {
     it('FieldPath.documentId', function () {
       expect(firebase.firestore.FieldPath.documentId).to.be.a('function');
     });
+
+    it('FieldValue.arrayRemove', function () {
+      expect(firebase.firestore.FieldValue.arrayRemove).to.be.a('function');
+    });
+           
+    it('FieldValue.arrayUnion', function () {
+      expect(firebase.firestore.FieldValue.arrayUnion).to.be.a('function');
+    });
   });
 
   describe('#auth', function() {

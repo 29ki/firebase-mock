@@ -159,6 +159,7 @@ MockFirestoreDocument.prototype._update = function (changes, opts, callback) {
     self._defer('update', _.toArray(arguments), function () {
       if (!err) {
         var base = self._getData();
+        var original = _.cloneDeep(base);
         var data;
         if (_opts.setMerge) {
           data = _.merge(_.isObject(base) ? base : {}, changes);
@@ -172,7 +173,7 @@ MockFirestoreDocument.prototype._update = function (changes, opts, callback) {
             data = _.assign(_.isObject(base) ? base : {}, utils.updateToFirestoreObject(changes));
           }
         }
-        data = utils.removeEmptyFirestoreProperties(data, utils.getServerTime());
+        data = utils.removeEmptyFirestoreProperties(data, utils.getServerTime(), original);
         self._dataChanged(data);
         resolve(data);
       } else {
